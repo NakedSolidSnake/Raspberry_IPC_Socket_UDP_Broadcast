@@ -48,7 +48,7 @@ Para entender o endereço broadcast é adotado ip da classe C onde o primeiro oc
 ## Representação do Broadcast na rede
 Quando uma mensagem é enviada para todas as máquinas irão receber para ilustrar, o exemplo representa uma mensagem broadcast enviada em uma rede classe B
 
-<p align="center>
+<p align="center">
 <img src="https://i.stack.imgur.com/Jq190.gif">
 </p>
 
