@@ -39,7 +39,7 @@
 * [Referência](#referência)
 
 ## Introdução
-O UDP no modo broadcast permite enviar mensagens para todas as máquinas conectadas na rede de uma única vez, para exemplificar tome o a televisão como exemplo, o sinal de TV é transmitido pelo ar onde qualquer televisão sintonizada nessa determinada frequência pode captar o programa transmitido, esse tipo de aplicação seria inviável se o sinal fosse enviado para cada televisor existente.
+O UDP no modo broadcast permite enviar mensagens para todas as máquinas conectadas na rede de uma única vez, para exemplificar tome o a televisão como exemplo, o sinal de TV é transmitido pelo ar onde qualquer televisão sintonizada nessa determinada frequência pode captar o programa transmitido, esse tipo de aplicação seria inviável se o sinal fosse enviado para cada televisor existente. O broadcast está presente somente no protocolo IPv4 no IPv6 é usado uma outra técnica. O broadcast é usado no protocolo ARP(Address Resolution Protocol) que mapeia o endereço físico, o endereço MAC.
 
 ## Endereço Broadcast 
 Para entender o endereço broadcast é adotado ip da classe C onde o primeiro octeto tem um range de 192 até 223, normalmente as redes domésticas utilizam essa classe como por exemplo 192.168.0.XXX. Na classe C quando a rede é descrita na forma 192.168.0.XXX, não devemos usar os valores 0 e 255, onde 0 representa a rede e o 255 representa o endereço broadcast dessa rede, sendo assim se uma mensagem for enviada para esse endereço todas as máquinas conectadas nessa rede irá receber a mensagem.
@@ -537,7 +537,7 @@ $ ./kill_process.sh
 ```
 
 ## Conclusão
-O UDP é um protocolo utilizado quando se necessita enviar grandes volumes de dados, devido a sua simplicidade garante um maior desempenho em velocidade no envio de mensagens, o fato de não reportar as mensagens que recebeu, isso reduz a quantidade de processamento para tratar o protocolo, esse protocolo é usado também em aplicações de controle, estado e configuração da rede como o DNS(Domain Name System), o DHCP (Dynamic Host Configuration) e o RIP(Routing Information Protocol), nos próximo artigo iremos abordar o seu uso como Broadcast.
+O broadcast é uma boa solução para enviar mensagens para de uma única vez para os interessados, porém dependendo da frequência em que essa mensagem é disseminada pode causar congestionamento na rede, causando uma queda de desempenho, e enviando mensagens para máquinas que não estejam interessados nesses dados. Para resolver esse problema existe um modo de envio conhecido como Multicast que será abordado no próximo artigo.
 
 ## Referência
 * [Link do projeto completo](https://github.com/NakedSolidSnake/Raspberry_IPC_Socket_UDP)
