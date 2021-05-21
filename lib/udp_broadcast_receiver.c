@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-bool UDP_Receiver_Init(UDP_Receiver *receiver)
+bool UDP_Broadcast_Receiver_Init(UDP_Receiver *receiver)
 {
     bool status = false;
     struct sockaddr_in server_addr;
@@ -41,7 +41,7 @@ bool UDP_Receiver_Init(UDP_Receiver *receiver)
     return status;
 }
 
-bool UDP_Receiver_Run(UDP_Receiver *receiver, void *user_data)
+bool UDP_Broadcast_Receiver_Run(UDP_Receiver *receiver, void *user_data)
 {
     bool status = false;
     struct sockaddr_in client_addr;

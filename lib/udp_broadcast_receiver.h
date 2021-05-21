@@ -25,9 +25,9 @@ typedef struct
 
 
 
-bool UDP_Receiver_Init(UDP_Receiver *receiver);
+bool UDP_Broadcast_Receiver_Init(UDP_Receiver *receiver);
 
-bool UDP_Receiver_Run(UDP_Receiver *receiver, void *user_data);
+bool UDP_Broadcast_Receiver_Run(UDP_Receiver *receiver, void *user_data);
 
 
 #endif /* UDP_BROADCAST_RECEIVER_H_ */
