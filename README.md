@@ -65,12 +65,12 @@ Nas interfaces do computador é possível notar o ip que é atribuído para a m�
 ....
 2: enp0s31f6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
     link/ether 10:65:30:22:8a:1a brd ff:ff:ff:ff:ff:ff
-    inet 192.168.0.140/24 <font color="green">brd</font> 192.168.0.255 scope global dynamic noprefixroute enp0s31f6
+    inet 192.168.0.140/24 brd 192.168.0.255 scope global dynamic noprefixroute enp0s31f6
        valid_lft 4736sec preferred_lft 4736sec
 ....
 ```
 
-Obs: Durante o exemplo é necessário inserir esse endereço correspondente a rede que está rodando o exemplo no descritor usado em *button_process* 
+<font color="red">Obs:</font> Durante o exemplo é necessário inserir esse endereço correspondente a rede que está rodando o exemplo no descritor usado em *button_process* 
 
 ## Preparação do Ambiente
 Antes de apresentarmos o exemplo, primeiro precisaremos instalar algumas ferramentas para auxiliar na análise da comunicação. As ferramentas necessárias para esse artigo são o tcpdump e o netcat(nc), para instalá-las basta executar os comandos abaixo:
