@@ -54,6 +54,24 @@ Quando uma mensagem é enviada para todas as máquinas irão receber para ilustr
 
 Na imagem é possível notar que as mensagem não é propagada pelo roteador
 
+## Identificando o endereço de broadcast
+Para identicar qual o endereço broadcast da rede pode ser usado o comando ip
+```bash
+$ ip a
+```
+
+Nas interfaces do computador é possível notar o ip que é atribuído para a máquina e em seguida o endereço de broadcast logo a frente do acrônimo brd(broadcast), esse é o endereço que é usado para enviar mensagens broadcast
+```bash 
+....
+2: enp0s31f6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 10:65:30:22:8a:1a brd ff:ff:ff:ff:ff:ff
+    inet 192.168.0.140/24 brd 192.168.0.255 scope global dynamic noprefixroute enp0s31f6
+       valid_lft 4736sec preferred_lft 4736sec
+....
+```
+
+Obs: Durante o exemplo é necessário inserir esse endereço correspondente a rede que está rodando o exemplo no descritor usado em *button_process* 
+
 ## Preparação do Ambiente
 Antes de apresentarmos o exemplo, primeiro precisaremos instalar algumas ferramentas para auxiliar na análise da comunicação. As ferramentas necessárias para esse artigo são o tcpdump e o netcat(nc), para instalá-las basta executar os comandos abaixo:
 
@@ -387,8 +405,8 @@ Para facilitar a execução do exemplo, o exemplo proposto foi criado baseado em
 Pra obter uma cópia do projeto execute os comandos a seguir:
 
 ```bash
-$ git clone https://github.com/NakedSolidSnake/Raspberry_IPC_Socket_UDP
-$ cd Raspberry_IPC_Socket_UDP
+$ git clone https://github.com/NakedSolidSnake/Raspberry_IPC_Socket_UDP_Broadcast
+$ cd Raspberry_IPC_Socket_UDP_Broadcast
 $ mkdir build && cd build
 ```
 
