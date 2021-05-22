@@ -65,7 +65,7 @@ Nas interfaces do computador é possível notar o ip que é atribuído para a m�
 ....
 2: enp0s31f6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
     link/ether 10:65:30:22:8a:1a brd ff:ff:ff:ff:ff:ff
-    inet 192.168.0.140/24 brd 192.168.0.255 scope global dynamic noprefixroute enp0s31f6
+    inet 192.168.0.140/24 <font color="green">brd</font> 192.168.0.255 scope global dynamic noprefixroute enp0s31f6
        valid_lft 4736sec preferred_lft 4736sec
 ....
 ```
