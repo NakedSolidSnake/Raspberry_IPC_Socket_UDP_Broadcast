@@ -6,17 +6,17 @@
 
 ## Tópicos
 * [Introdução](#introdução)
-* [Datagrama UDP](#datagrama-udp)
-* [Systemcalls utilizados no UDP](#systemcalls-utilizados-no-udp)
+* [Endereço Broadcast](#endereço-broadcast)
+* [Identificando o endereço de broadcast](#identificando-o-endereço-de-broadcast)
 * [Preparação do Ambiente](#preparação-do-ambiente)
 * [netcat](#netcat)
 * [tcpdump](#tcpdump)
 * [Implementação](#implementação)
 * [Biblioteca](#biblioteca)
-* [udp_server.h](#udp_serverh)
-* [udp_server.c]($udp_serverc)
-* [udp_client.h](#udp_clienth)
-* [udp_client.c](#udp_clientc)
+* [udp_broadcast_receiver.h](#udp_broadcast_receiverh)
+* [udp_broadcast_receiver.c](#udp_broadcast_receiverc)
+* [udp_broadcast_sender.h](#udp_broadcast_senderh)
+* [udp_broadcast_sender.c](#udp_broadcast_senderc)
 * [launch_processes](#launch_processes)
 * [button_interface](#button_interface)
 * [led_interface](#led_interface)
@@ -39,7 +39,7 @@
 * [Referência](#referência)
 
 ## Introdução
-O UDP no modo broadcast permite enviar mensagens para todas as máquinas conectadas na rede de uma única vez, para exemplificar tome o a televisão como exemplo, o sinal de TV é transmitido pelo ar onde qualquer televisão sintonizada nessa determinada frequência pode captar o programa transmitido, esse tipo de aplicação seria inviável se o sinal fosse enviado para cada televisor existente. O broadcast está presente somente no protocolo IPv4 no IPv6 é usado uma outra técnica. O broadcast é usado no protocolo ARP(Address Resolution Protocol) que mapeia o endereço físico, o endereço MAC.
+O UDP no modo broadcast permite enviar mensagens para todas as máquinas conectadas na rede de uma única vez, para exemplificar tome o a televisão como exemplo, o sinal de TV é transmitido pelo ar onde qualquer televisão sintonizada nessa determinada frequência pode captar o programa transmitido, esse tipo de aplicação seria inviável se o sinal fosse enviado para cada televisor existente. O broadcast está presente somente no protocolo IPv4, no IPv6 é usado uma outra técnica conhecida como multicast. O broadcast é usado no protocolo ARP(Address Resolution Protocol) que mapeia o endereço físico, o endereço MAC.
 
 ## Endereço Broadcast 
 Para entender o endereço broadcast é adotado ip da classe C onde o primeiro octeto tem um range de 192 até 223, normalmente as redes domésticas utilizam essa classe como por exemplo 192.168.0.XXX. Na classe C quando a rede é descrita na forma 192.168.0.XXX, não devemos usar os valores 0 e 255, onde 0 representa a rede e o 255 representa o endereço broadcast dessa rede, sendo assim se uma mensagem for enviada para esse endereço todas as máquinas conectadas nessa rede irá receber a mensagem.
@@ -70,7 +70,7 @@ Nas interfaces do computador é possível notar o ip que é atribuído para a m�
 ....
 ```
 
-<font color="red">Obs:</font> Durante o exemplo é necessário inserir esse endereço correspondente a rede que está rodando o exemplo no descritor usado em *button_process* 
+<font color="red">Obs:</font> Durante o exemplo é necessário inserir esse endereço correspondente a rede em que está rodando o exemplo no descritor usado em *button_process* 
 
 ## Preparação do Ambiente
 Antes de apresentarmos o exemplo, primeiro precisaremos instalar algumas ferramentas para auxiliar na análise da comunicação. As ferramentas necessárias para esse artigo são o tcpdump e o netcat(nc), para instalá-las basta executar os comandos abaixo:
@@ -99,7 +99,7 @@ Para demonstrar o uso desse IPC, iremos utilizar o modelo Cliente/Servidor, onde
 A biblioteca criada permite uma fácil criação do servidor, sendo o servidor orientado a eventos, ou seja, fica aguardando as mensagens chegarem.
 
 ### udp_broadcast_receiver.h
-Primeiramente criamos um callback responsável por eventos de recebimento, essa função será chamada quando houve esse evento.
+Primeiramente criamos um callback responsável por eventos de recebimento, essa função será chamada quando houver esse evento.
 ```c
 typedef void (*Event)(const char *buffer, size_t buffer_size, void *data);
 ```
@@ -128,7 +128,7 @@ bool UDP_Broadcast_Receiver_Run(UDP_Receiver *receiver, void *user_data);
 
 ### udp_broadcast_receiver.c
 
-No UDP_Broadcast_Receiver_Init definimos algumas váriaveis para auxiliar na inicialização do servidor, sendo uma variável booleana que representa o estado da inicialização do servidor, uma variável do tipo inteiro para habilitar o reuso da porta caso o servidor precise reiniciar e uma estrutura sockaddr_in que é usada para configurar o servidor para se comunicar através da rede.
+No UDP_Broadcast_Receiver_Init definimos algumas variáveis para auxiliar na inicialização do servidor, sendo uma variável booleana que representa o estado da inicialização do servidor, uma variável do tipo inteiro para habilitar o reuso da porta caso o servidor precise reiniciar e uma estrutura sockaddr_in que é usada para configurar o servidor para se comunicar através da rede.
 
 ```c
 bool status = false;
@@ -139,13 +139,13 @@ int yes = 1;
 Para realizar a inicialização é criado um dummy do while, para que quando houver falha em qualquer uma das etapas, irá sair da função com status de erro, nesse ponto verificamos se o contexto, o buffer e se o tamanho do buffer foi inicializado, sendo sua inicialização de responsabilidade do usuário
 
 ```c
-if(!server || !server->buffer || !server->buffer_size)
+if(!receiver || !receiver->buffer || !receiver->buffer_size)
     break;
 ```
 Criamos um endpoint com o perfil de se conectar via protocolo IPv4(AF_INET), do tipo datagram que caracteriza o UDP(SOCK_DGRAM), o último parâmetro pode ser 0 nesse caso.
 ```c
-server->socket = socket(AF_INET, SOCK_DGRAM, 0);
-if(server->socket < 0)
+receiver->socket = socket(AF_INET, SOCK_DGRAM, 0);
+if(receiver->socket < 0)
     break;
 ```
 Preenchemos a estrutura com parâmetros fornecidos pelo usuário como em qual porta que o serviço vai rodar.
@@ -154,17 +154,17 @@ memset(&server_addr, 0, sizeof(server_addr));
 
 server_addr.sin_family = AF_INET;
 server_addr.sin_addr.s_addr = INADDR_ANY;
-server_addr.sin_port = htons(server->port);
+server_addr.sin_port = htons(receiver->port);
 ```
 
 Aqui permitimos o reuso do socket caso necessite reiniciar o serviço
 ```c
-if (setsockopt(server->socket, SOL_SOCKET, SO_REUSEADDR, (void*)&yes, sizeof(yes)) < 0)
+if (setsockopt(receiver->socket, SOL_SOCKET, SO_REUSEADDR, (void*)&yes, sizeof(yes)) < 0)
     break;
 ```
 Aplicamos as configurações ao socket criado e atribuimos true na variável status
 ```c
-if (bind(server->socket, (const struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+if (bind(receiver->socket, (const struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     break;
 status = true;
 ```
@@ -179,13 +179,13 @@ size_t read_size;
 ```
 Verificamos se o socket é válido e aguardamos uma mensagem do cliente, repassamos a mensagem para o callback realizar o tratamento de acordo com a aplicação do cliente, e retornamos o estado.
 ```c
-if(server->socket > 0)
+if(receiver->socket > 0)
 {
-    read_size = recvfrom(server->socket, server->buffer, server->buffer_size, MSG_WAITALL,
+    read_size = recvfrom(receiver->socket, receiver->buffer, receiver->buffer_size, MSG_WAITALL,
                                 (struct sockaddr *)&client_addr, &len); 
-    server->buffer[read_size] = 0;
-    server->on_receive_message(server->buffer, read_size, user_data);
-    memset(server->buffer, 0, server->buffer_size);
+    receiver->buffer[read_size] = 0;
+    receiver->on_receive_message(receiver->buffer, read_size, user_data);
+    memset(receiver->buffer, 0, receiver->buffer_size);
     status = true;
 }
 
@@ -201,7 +201,7 @@ typedef struct
     int socket;
     const char *hostname;
     const char *port;
-} UDP_Client;
+} UDP_Sender;
 ```
 
 Inicializa o cliente com os parâmetros do descritor 
@@ -222,11 +222,11 @@ int broadcast_enable;
 bool status = false;
 do 
 {
-    if(!client)
+    if(!sender)
         break;
 
-    client->socket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if(client->socket < 0)
+    sender->socket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if(sender->socket < 0)
         break;
 
     broadcast_enable = 1;
@@ -250,12 +250,12 @@ Parâmetrizamos a estrutura com os dados do servidor
 ```c
 memset(&server, 0, sizeof(server));
 server.sin_family = AF_INET;
-server.sin_addr.s_addr = inet_addr(client->hostname);
-server.sin_port = htons(atoi(client->port));
+server.sin_addr.s_addr = inet_addr(sender->hostname);
+server.sin_port = htons(atoi(sender->port));
 ```
 Realizamos o envio da mensagem para o servidor
 ```c
-send_len = sendto(client->socket, message, message_size, 0, (struct sockaddr *)&server, sizeof(server));
+send_len = sendto(sender->socket, message, message_size, 0, (struct sockaddr *)&server, sizeof(server));
   if(send_len == message_size)
       status = true;
 
@@ -314,21 +314,21 @@ const char *led_commands[] =
 ```
 A implementação do Button_Run ficou simples, onde realizamos a inicialização do interface de botão e ficamos em loop aguardando o pressionamento do botão para alterar o estado da variável e enviar a mensagem para o servidor
 ```c
-bool Button_Run(UDP_Client *client, Button_Data *button)
+bool Button_Run(UDP_Sender *sender, Button_Data *button)
 {
     int state = 0;
 
     if(button->interface->Init(button->object) == false)
         return false;
 
-    if(UDP_Client_Init(client) == false)
+    if(UDP_Broadcast_Sender_Init(sender) == false)
         return false;
 
     while (true)
     {
         wait_press(button);
         state ^= 0x01;
-        UDP_Client_Send(client, led_commands[state], strlen(led_commands[state]));
+        UDP_Broadcast_Sender_Send(sender, led_commands[state], strlen(led_commands[state]));
     }
 
     return false;
@@ -337,19 +337,19 @@ bool Button_Run(UDP_Client *client, Button_Data *button)
 ## *led_interface*
 A implementação do LED_Run ficou simplificada, realizamos a inicialização da interface de LED, do servidor e ficamos em loop aguardando o recebimento de uma mensagem.
 ```c
-bool LED_Run(UDP_Server *server, LED_Data *led)
+bool LED_Run(UDP_Receiver *receiver, LED_Data *led)
 {
 
 	if(led->interface->Init(led->object) == false)
 		return false;
 
-	if(UDP_Server_Init(server) == false) 
+	if(UDP_Broadcast_Receiver_Init(receiver) == false) 
 		return false;
 
 
 	while(true)
 	{
-		UDP_Server_Run(server, led);
+		UDP_Broadcast_Receiver_Run(receiver, led);
 	}
 
 	return false;	
@@ -360,13 +360,13 @@ bool LED_Run(UDP_Server *server, LED_Data *led)
 A parametrização do cliente fica por conta do processo de botão que inicializa o contexto com o endereço broadcast, o serviço que deseja consumir, e assim passamos os argumentos para Button_Run iniciar o processo.
 
 ```c
-UDP_Client client = 
+UDP_Sender sender = 
 {
     .hostname = "192.168.0.255",
     .port  = "1234"
 };
 
-Button_Run(&client, &button);
+Button_Run(&sender, &button);
 ```
 ## *led_process*
 A parametrização do servidor fica por conta do processo de LED que inicializa o contexto com o buffer, seu tamanho, a porta onde vai servir e o callback preenchido, e assim passamos os argumentos para LED_Run iniciar o serviço.
@@ -555,7 +555,7 @@ $ ./kill_process.sh
 ```
 
 ## Conclusão
-O broadcast é uma boa solução para enviar mensagens para de uma única vez para os interessados, porém dependendo da frequência em que essa mensagem é disseminada pode causar congestionamento na rede, causando uma queda de desempenho, e enviando mensagens para máquinas que não estejam interessados nesses dados. Para resolver esse problema existe um modo de envio conhecido como Multicast que será abordado no próximo artigo.
+O broadcast é uma boa solução para enviar mensagens de uma única vez para os interessados, porém dependendo da frequência em que essa mensagem é disseminada pode causar congestionamento na rede, causando uma queda de desempenho, e enviando mensagens para máquinas que não estejam interessados nesses dados. Para resolver esse problema existe um modo de envio conhecido como Multicast que será abordado no próximo artigo.
 
 ## Referência
 * [Link do projeto completo](https://github.com/NakedSolidSnake/Raspberry_IPC_Socket_UDP)
