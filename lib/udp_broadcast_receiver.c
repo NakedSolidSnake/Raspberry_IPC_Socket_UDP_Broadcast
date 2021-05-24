@@ -11,6 +11,7 @@ bool UDP_Broadcast_Receiver_Init(UDP_Receiver *receiver)
 {
     bool status = false;
     struct sockaddr_in server_addr;
+    int yes = 1;
 
     do
     {
@@ -26,8 +27,7 @@ bool UDP_Broadcast_Receiver_Init(UDP_Receiver *receiver)
         server_addr.sin_family = AF_INET;
         server_addr.sin_addr.s_addr = INADDR_ANY;
         server_addr.sin_port = htons(receiver->port);
-
-        int yes = 1;
+        
         if (setsockopt(receiver->socket, SOL_SOCKET, SO_REUSEADDR, (void*)&yes, sizeof(yes)) < 0)
             break;
 

@@ -18,7 +18,6 @@ bool UDP_Broadcast_Sender_Init(UDP_Sender *sender)
         if(sender->socket < 0)
             break;
 
-        broadcast_enable = 1;
         if(setsockopt(sender->socket, SOL_SOCKET, SO_BROADCAST, (void *)&broadcast_enable, sizeof(broadcast_enable)) < 0)
             break;
 
